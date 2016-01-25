@@ -6,6 +6,7 @@
 #include <assert.h>
 #include "arg.h"
 #include "except.h"
+#include <gsl/gsl_poly.h>
 
 using namespace std;
 
@@ -64,21 +65,6 @@ int main(int argc, char* argv[])
     b = kA;
     c = -(kw + (kA*am));
     d = -kA*kw;
-
-    f = ((3*(c/a)) - ((pow(b,2))/(pow(a,2))))/3;
-    g = ((2*(pow(b,3))/(pow(a,3)) - (((9*b)*c)/pow(a,2)) + ((27*(d/a))))) /27;
-    h = (((pow(g,2))/4)+((pow(f,3)))/27);
-    I = ((pow(g,2))/4 - h);
-    i = pow(I,0.5);
-    j = pow(i,p);
-    J = -g/(2*i);
-    k = acos(J);
-
-    X1 = (2*j*cos(k/3)) - (b/(3*a));
-    X2 = -j*( cos(k/3) + pow(3,0.5)*sin(k/3) ) - (b/(3*a));
-    X3 = -j*( cos(k/3) - pow(3,0.5)*sin(k/3) ) - (b/(3*a));
-    cout << "X1 = " << X1 << ", X2 = " << X2 << ", X3 = " << X3 << "\n";
-
     break;
 
   case 'B' :
@@ -87,31 +73,27 @@ int main(int argc, char* argv[])
     c = kw*am/kA - kw;
     d = -kw*kw/kA;
 
-    f = ((3*(c/a)) - ((pow(b,2))/(pow(a,2))))/3;
-    g = ((2*(pow(b,3))/(pow(a,3)) - (((9*b)*c)/pow(a,2)) + ((27*(d/a))))) /27;
-    h = (((pow(g,2))/4)+((pow(f,3)))/27);
-    assert ( h > 0 );
-
-    r = -g/2 + pow(h,0.5);
-    s = pow(r,p);
-    t = -g/2 - pow(h,0.5);
-    u = pow(t,p);
-
-    X1 = (s+u) - (b/(3*a));
-    X2 = -(s+u)/2 -(b/(3*a)) + i*(s-u)*pow(3,0.5)/2;
-    X3 = -(s+u)/2 -(b/(3*a)) - i*(s-u)*pow(3,0.5)/2;
-    cout << "X1 = " << X1 << ", X2 = " << X2 << ", X3 = " << X3 << "\n";
-
     break;
 
   default :
     SayBye("Incorrect option");
   }
-
-
-	   
-  pH = -log10(X1);
-  cout << "pH = " << pH << "\n";
+  
+  double x0, x1, x2;
+  int n_roots;
+  n_roots = gsl_poly_solve_cubic (b, c, d, &x0, &x1, &x2);
+  
+  cout << n_roots << " roots found" << "\n";
+  if (n_roots == 1) {
+    cout << "X0 = " << x0 << "\t";
+    pH = -log10(x0);
+    cout << "pH = " << pH << "\n";
+  }
+  else if (n_roots == 3) {
+    cout << "X0 = " << x0 << ", X1 = " << x1 << ", X2 = " << x2 << "\n";
+    pH = -log10(x2);
+    cout << "pH = " << pH << "\n";
+  }
 
   return 1;
 }

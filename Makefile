@@ -6,6 +6,7 @@ CC=g++
 #LIBSPATH=/home/tc0008/sundials/lib
 #LIBS=-L/usr/local/lib -lgsl -lgslcblas -lm -pthread -lsundials_cvode -lsundials_nvecserial
 #LIBS=-L/usr/local/lib -lm -pthread -lsundials_cvode -lsundials_nvecserial
+LIBS=-lgsl
 #INC=-I/usr/local/include/
 
 #CFLAGS=-O2 -ffast-math -Wno-deprecated -c
