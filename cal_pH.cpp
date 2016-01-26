@@ -1,53 +1,56 @@
 #include <iostream>
 #include <cmath>
-//#include <math.h>
-#include <stdio.h>
-#include <math.h>
 #include <stdio.h>
 #include <assert.h>
-#include <gmp.h>
-#include <mpfr.h>
+#include <mpreal.h>
 #include "arg.h"
 #include "except.h"
 
-
 using namespace std;
+using mpfr::mpreal;
 
 int main(int argc, char* argv[])
 {
+  int nDigits = 512;
   int nDis = 2;
-  long double a, b, c, d, f, g, h, I, i, J, j, k, r, s, t, u, 
-    X1, X2, X3, am, pH, kw, pKa, kA, p=0.3333333333333333333;
   char acid_base = 'A';
-  kw = 1.0116;
+  long double kw_less_pow, pKa, conc;
+  kw_less_pow = 1.0116;
   pKa = 7;
-  am = 0.01;
-
-  if (nDis>0)
-    cout << "\nThis program calculates pH for very dilute solutions of a weak acid or base.\n\n";
+  conc = 0.01;
 
   // Provide a command line user interface
   static Config_t params[] = {
 
     "Kw", "Dissociation constant of water (without the 10^-14)",
-    "-kw", L_DOUBLE, (caddr_t)&kw,
+    "-kw", L_DOUBLE, (caddr_t)&kw_less_pow,
 
     "pKa", "pKa",
     "-pka", L_DOUBLE, (caddr_t)&pKa,  
 
     "conc", "Concentration (molarity, mol/L)",
-    "-c", L_DOUBLE, (caddr_t)&am,
+    "-c", L_DOUBLE, (caddr_t)&conc,
 
     "Acid/Base", "Is this acid ('A') or base ('B')",
     "-ab", CHAR, (caddr_t)&acid_base,
 
     "dis", "Display options; 0 - most parsimonious; 2 - most verbose",
     "-dis", INT, (caddr_t)&nDis,
-	  
+
+    "digits", "Number of digits used for precision calculation",
+    "-nd", INT, (caddr_t)&nDigits,
+	  	  
     0, 0, 0, NOTYPE, 0
 
   };
   if ( argc < 2) {
+
+    if (nDis>0) {
+      cout << "\nThis program calculates pH for very dilute solutions of a weak acid or base.\n";
+      cout << "The MPFR, and it's C++ wrapper was used to achieve high precision calculation.\n";
+      cout << "The precision can be controlled by setting -nd to large number.\n\n";
+    }
+
     pusage ( argv[0], params );
 
     if (nDis>1) {
@@ -66,33 +69,32 @@ int main(int argc, char* argv[])
     exit (1);
   }
 
-  mpfr_t gmp_tmp, gmp_a, gmp_b, gmp_c, gmp_d, gmp_f, gmp_g, gmp_h, gmp_I, gmp_i, gmp_J, gmp_j, gmp_k, gmp_r, gmp_s, gmp_t, gmp_u, 
-    gmp_X1, gmp_X2, gmp_X3, gmp_am, gmp_pH, gmp_kw, gmp_pKa, gmp_kA; //, p=0.3333333333333333333;
+  if (nDis>0) {
+    cout << "\nThis program calculates pH for very dilute solutions of a weak acid or base.\n";
+    cout << "The MPFR, and it's C++ wrapper was used to achieve high precision calculation.\n";
+    cout << "The precision can be controlled by setting -nd to large number.\n\n";
+  }
 
-  mpfr_inits2(128, gmp_tmp, gmp_a, gmp_b, gmp_c, gmp_d, gmp_f, gmp_g, gmp_h, gmp_I, gmp_i, gmp_J, gmp_j, gmp_k, gmp_r, gmp_s, gmp_t, gmp_u, 
-	      gmp_X1, gmp_X2, gmp_X3, gmp_am, gmp_pH, gmp_kw, gmp_pKa, gmp_kA, NULL);
+  mpreal::set_default_prec(mpfr::digits2bits(nDigits));
 
-  mpfr_set_d (gmp_kw, kw, MPFR_RNDN);
-  mpfr_mul_d (gmp_kw, gmp_kw, 1e-14, MPFR_RNDN);
-  // kw *= 1e-14;
+  mpreal a, b, c, d, f, g, h, I, i, J, j, k, r, s, t, u, X1, X2, X3, pH, kw, kA, mp_conc, p=0.3333333333333333333;
+  mp_conc = conc;
+  kw = kw_less_pow*1e-14;
+  kA = 1/(pow (10, pKa));
 
-  mpfr_set_d (gmp_tmp, 10, MPFR_RNDN);
-  mpfr_set_d (gmp_kA, -pKa, MPFR_RNDN);
-  mpfr_pow (gmp_kA, gmp_tmp, gmp_kA, MPFR_RNDN);
-  // kA = 1/(pow (10, pKa));
 
   switch (acid_base) {
 
   case 'A' :
     a = 1;
     b = kA;
-    c = -(kw + kA*am);
+    c = -(kw + kA*mp_conc);
     d = -kA*kw;
     break;
 
   case 'B' :
     a = 1;
-    b = am+kA;
+    b = mp_conc+kA;
     c = - kw;
     d = -kA*kw;
     break;
@@ -101,8 +103,6 @@ int main(int argc, char* argv[])
     SayBye("Incorrect option\n");
   }
   
-  mpfr_printf ("kA %.17Rg\n", gmp_kA);
-
   // f = ((3*(c/a)) - ((pow(b,2))/(pow(a,2))))/3;  
   f = ( 3*c/a - (b*b)/(a*a) ) / 3; 
   // g = ((2*(pow(b,3))/(pow(a,3)) - (((9*b)*c)/pow(a,2)) + ((27*(d/a))))) /27;
@@ -115,11 +115,11 @@ int main(int argc, char* argv[])
     // i = pow(I,0.5);
     i = sqrt(I);
     //j = pow(i,p);
-     j = cbrt(i);
+    j = cbrt(i);
     J = -g/(2*i);
     if (J<-1) {
       J=-1;
-      printf("J is %Lf\n", J);
+      cout << "J is " << J << "\n";
       LookOut("J in acos(J) is out of bounds, resetting J to -1");
     }
     k = acos(J);
@@ -127,10 +127,10 @@ int main(int argc, char* argv[])
     X1 = (2*j*cos(k/3)) - (b/(3*a));
     X2 = -j*( cos(k/3) + sqrt(3)*sin(k/3) ) - (b/(3*a));
     X3 = -j*( cos(k/3) - sqrt(3)*sin(k/3) ) - (b/(3*a));
-    if (nDis>0)
+    if (nDis>1)
       cout << "3 real roots; X1 = " << X1 << ", X2 = " << X2 << ", X3 = " << X3 << "\n";
   }
-  else if (h>0){
+  else if (h>0) {
     f = ((3*(c/a)) - ((pow(b,2))/(pow(a,2))))/3;
     g = ((2*(pow(b,3))/(pow(a,3)) - (((9*b)*c)/pow(a,2)) + ((27*(d/a))))) /27;
     h = (((pow(g,2))/4)+((pow(f,3)))/27);
@@ -143,8 +143,8 @@ int main(int argc, char* argv[])
     X1 = (s+u) - (b/(3*a));
     X2 = -(s+u)/2 -(b/(3*a)) + i*(s-u)*pow(3,0.5)/2;
     X3 = -(s+u)/2 -(b/(3*a)) - i*(s-u)*pow(3,0.5)/2;
-    if (nDis>0)
-      cout << "1 real root; X1 = " << X1 << ", X2 = " << X2 << ", X3 = " << X3 << "\n";
+    if (nDis>1)
+      cout << "1 real root; X1 = " << X1 << ", X2 = " << X2 << ", X3 = " << X3 << "\n\n";
   }
   else {
     SayBye ("Numeric calculation error");
@@ -153,5 +153,5 @@ int main(int argc, char* argv[])
   pH = -log10(X1);
   cout << "pH = " << pH << "\n";
 
-  return 1;
+  return 0;
 }
