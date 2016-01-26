@@ -19,7 +19,11 @@ int main(int argc, char* argv[])
   pKa = 7;
   am = 0.01;
 
-  cout << "\nThis program calculates pH for very dilute solutions of a weak acid or base.\n\n";
+  cout << "\nThis program calculates pH for very dilute solutions of a weak acid or base.\n";
+  cout << "This version used GSL cubic function solver, which only accepts double precision\n";
+  cout << "and thus may not be precise enough for low concentration calculation involved.\n";
+  cout << "Check out the branch NoGSL_Cubic where cubic function is solved by using a manually\n";
+  cout << "implemented trigonometric method with long double precision.\n\n";
   cout << "\n\tThe dissociation constant of water at   0 deg C is  0.1153 x 10^-14.";
   cout << "\n\tThe dissociation constant of water at  25 deg C is  1.0116 x 10^-14.";
   cout << "\n\tThe dissociation constant of water at  37 deg C is  2.2418 x 10^-14.";
@@ -63,15 +67,15 @@ int main(int argc, char* argv[])
   case 'A' :
     a = 1;
     b = kA;
-    c = -(kw + (kA*am));
+    c = -(kw + kA*am);
     d = -kA*kw;
     break;
 
   case 'B' :
     a = 1;
-    b = kw/kA;
-    c = kw*am/kA - kw;
-    d = -kw*kw/kA;
+    b = am + kA;
+    c = -kw;
+    d = -kA*kw;
 
     break;
 
