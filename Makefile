@@ -7,10 +7,11 @@ CC=g++
 #LIBS=-L/usr/local/lib -lgsl -lgslcblas -lm -pthread -lsundials_cvode -lsundials_nvecserial
 #LIBS=-L/usr/local/lib -lm -pthread -lsundials_cvode -lsundials_nvecserial
 #INC=-I/usr/local/include/
+LIBS=-lgmp -lmpfr
 
 #CFLAGS=-O2 -ffast-math -Wno-deprecated -c
-#CFLAGS=-g -O0 -c -Wno-deprecated
-CFLAGS=-g -O0 -c -Wno-write-strings
+CFLAGS=-g -O0 -c -Wno-deprecated
+#CFLAGS=-g -O0 -c -Wno-write-strings
 
 # linker
 LD=g++

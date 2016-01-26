@@ -5,8 +5,11 @@
 #include <math.h>
 #include <stdio.h>
 #include <assert.h>
+#include <gmp.h>
+#include <mpfr.h>
 #include "arg.h"
 #include "except.h"
+
 
 using namespace std;
 
@@ -63,11 +66,20 @@ int main(int argc, char* argv[])
     exit (1);
   }
 
+  mpfr_t gmp_tmp, gmp_a, gmp_b, gmp_c, gmp_d, gmp_f, gmp_g, gmp_h, gmp_I, gmp_i, gmp_J, gmp_j, gmp_k, gmp_r, gmp_s, gmp_t, gmp_u, 
+    gmp_X1, gmp_X2, gmp_X3, gmp_am, gmp_pH, gmp_kw, gmp_pKa, gmp_kA; //, p=0.3333333333333333333;
 
+  mpfr_inits2(128, gmp_tmp, gmp_a, gmp_b, gmp_c, gmp_d, gmp_f, gmp_g, gmp_h, gmp_I, gmp_i, gmp_J, gmp_j, gmp_k, gmp_r, gmp_s, gmp_t, gmp_u, 
+	      gmp_X1, gmp_X2, gmp_X3, gmp_am, gmp_pH, gmp_kw, gmp_pKa, gmp_kA, NULL);
 
-  kw *= 1e-14;
+  mpfr_set_d (gmp_kw, kw, MPFR_RNDN);
+  mpfr_mul_d (gmp_kw, gmp_kw, 1e-14, MPFR_RNDN);
+  // kw *= 1e-14;
 
-  kA = 1/(pow (10, pKa));
+  mpfr_set_d (gmp_tmp, 10, MPFR_RNDN);
+  mpfr_set_d (gmp_kA, -pKa, MPFR_RNDN);
+  mpfr_pow (gmp_kA, gmp_tmp, gmp_kA, MPFR_RNDN);
+  // kA = 1/(pow (10, pKa));
 
   switch (acid_base) {
 
@@ -88,6 +100,8 @@ int main(int argc, char* argv[])
   default :
     SayBye("Incorrect option\n");
   }
+  
+  mpfr_printf ("kA %.17Rg\n", gmp_kA);
 
   // f = ((3*(c/a)) - ((pow(b,2))/(pow(a,2))))/3;  
   f = ( 3*c/a - (b*b)/(a*a) ) / 3; 
