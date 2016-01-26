@@ -89,29 +89,40 @@ int main(int argc, char* argv[])
     SayBye("Incorrect option\n");
   }
 
-  f = ((3*(c/a)) - ((pow(b,2))/(pow(a,2))))/3;  
-  g = ((2*(pow(b,3))/(pow(a,3)) - (((9*b)*c)/pow(a,2)) + ((27*(d/a))))) /27;
-  h = (((pow(g,2))/4)+((pow(f,3)))/27);
+  // f = ((3*(c/a)) - ((pow(b,2))/(pow(a,2))))/3;  
+  f = ( 3*c/a - (b*b)/(a*a) ) / 3; 
+  // g = ((2*(pow(b,3))/(pow(a,3)) - (((9*b)*c)/pow(a,2)) + ((27*(d/a))))) /27;
+  g = ( (2*b*b*b)/(a*a*a) - (9*b*c)/(a*a) + (27*d/a) ) / 27;
+  //h = (((pow(g,2))/4)+((pow(f,3)))/27);
+  h = g*g*0.25 + f*f*f/27;
   
-  if (h<0) {
-    I = ((pow(g,2))/4 - h);
-    i = pow(I,0.5);
-    j = pow(i,p);
+  if (h<=0 || f!=0 || g!=0) {
+    I = g*g*0.25 - h;
+    // i = pow(I,0.5);
+    i = sqrt(I);
+    //j = pow(i,p);
+     j = cbrt(i);
     J = -g/(2*i);
+    if (J<-1) {
+      J=-1;
+      printf("J is %Lf\n", J);
+      LookOut("J in acos(J) is out of bounds, resetting J to -1");
+    }
     k = acos(J);
 
     X1 = (2*j*cos(k/3)) - (b/(3*a));
-    X2 = -j*( cos(k/3) + pow(3,0.5)*sin(k/3) ) - (b/(3*a));
-    X3 = -j*( cos(k/3) - pow(3,0.5)*sin(k/3) ) - (b/(3*a));
+    X2 = -j*( cos(k/3) + sqrt(3)*sin(k/3) ) - (b/(3*a));
+    X3 = -j*( cos(k/3) - sqrt(3)*sin(k/3) ) - (b/(3*a));
     if (nDis>0)
       cout << "3 real roots; X1 = " << X1 << ", X2 = " << X2 << ", X3 = " << X3 << "\n";
   }
-  else {
+  else if (h>0){
     f = ((3*(c/a)) - ((pow(b,2))/(pow(a,2))))/3;
     g = ((2*(pow(b,3))/(pow(a,3)) - (((9*b)*c)/pow(a,2)) + ((27*(d/a))))) /27;
     h = (((pow(g,2))/4)+((pow(f,3)))/27);
     r = -g/2 + pow(h,0.5);
-    s = pow(r,p);
+    // s = pow(r,p);
+    s = cbrt(r);
     t = -g/2 - pow(h,0.5);
     u = pow(t,p);
 
@@ -120,6 +131,9 @@ int main(int argc, char* argv[])
     X3 = -(s+u)/2 -(b/(3*a)) - i*(s-u)*pow(3,0.5)/2;
     if (nDis>0)
       cout << "1 real root; X1 = " << X1 << ", X2 = " << X2 << ", X3 = " << X3 << "\n";
+  }
+  else {
+    SayBye ("Numeric calculation error");
   }
 	   
   pH = -log10(X1);
